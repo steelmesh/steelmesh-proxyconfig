@@ -1,4 +1,4 @@
-var Proxy = require('nginx-proxy');
+var Proxy = require('nginx-http-proxy');
 
 function NginxProxyConfigurer(config, instance) {
     
