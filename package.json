@@ -1,0 +1,15 @@
+{
+  "author": "Nathan Oehlman <nathan.oehlman@kondoot.com>",
+  "name": "steelmesh-proxyconfig",
+  "description": "Allows for steelmesh to automatically reconfigure an nginx proxy to point at a given server once established",
+  "version": "0.0.0",
+  "repository": {
+    "url": ""
+  },
+  "main": "main.js",
+  "engines": {
+    "node": "~0.8.5"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
