@@ -53,13 +53,16 @@ function NginxProxyConfigurer(steelmesh, opts, instance) {
             // Apply the update
             applyUpdate(function() {                                                
                 
-                // Remove the port
-                instance.on('exit', function() {
+                function deletePort() {
                     debug('Remvoing ' + port + ' for ' + opts.path);
                     myself.nginx.del(['localhost:' + port], opts.path);
                     myself.emit('port.deleted', port);
                     applyUpdate();
-                });
+                }
+                
+                // Remove the port
+                instance.on('exit', deletePort);
+                instance.on('shutdown', deletePort);
                 
                 myself.emit('port.added', port);
             });            
