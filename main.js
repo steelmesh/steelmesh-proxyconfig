@@ -1,4 +1,7 @@
-var Proxy = require('nginx-http-proxy');
+var debug = require('debug')('steelmesh-proxyconfig'),
+    util = require('util'),
+    events = require('events'),
+    Proxy = require('nginx-http-proxy');
 
 function NginxProxyConfigurer(steelmesh, opts, instance) {
     
@@ -14,41 +17,61 @@ function NginxProxyConfigurer(steelmesh, opts, instance) {
     }
     
     this.nginx = new Proxy(nginx);
-    console.log('opts');
+    this.ports = [];
     
+    // Applies the nginx updates that have occurred
     function applyUpdate(callback) {
+        
+        // Write the nginx config updates
         myself.nginx.update(function(err) {
             if (err) {
-                return console.log('Update error [' + err + ']');
+                debug('Update error [' + err + ']');
+                callback && callback.call(myself, arguments);
             }
+            
+            // Reload the nginx configuration
             myself.nginx.reload(function(err) {
                 if (err) {
-                    return console.log('Reload error [' + err + ']');
+                    debug('Reload error [' + err + ']');
                 }
-                console.log('nginx reloaded');
-                callback();
+                callback && callback.call(myself, arguments);                
             });
         });
     }
     
+    // Receive a message from steelmesh
     instance.on('message.steelmesh.client.up', function(message, handle) {
-        console.log('Registering new application instance with nginx');
-        myself.nginx.add(['localhost:' + message.port], opts.path, function(err) {
+        
+        var port = message.port;
+        
+        debug('Adding ' + port + ' for ' + opts.path);
+        
+        myself.nginx.add(['localhost:' + port], opts.path, function(err) {
             if (err) {
                 return console.log(err);
             }
-            applyUpdate(function() {
+            // Apply the update
+            applyUpdate(function() {                                                
+                
+                // Remove the port
                 instance.on('exit', function() {
-                    myself.nginx.del(['localhost:' + message.port], opts.path);
+                    debug('Remvoing ' + port + ' for ' + opts.path);
+                    myself.nginx.del(['localhost:' + port], opts.path);
+                    myself.emit('port.deleted', port);
                     applyUpdate();
                 });
+                
+                myself.emit('port.added', port);
             });            
             
         });        
         
     });
     
+    debug('Nginx proxy configuration ready');
+    
 }
+util.inherits(NginxProxyConfigurer, events.EventEmitter);
 
 // Export the plugin
 module.exports = function(steelmesh, config, instance) {

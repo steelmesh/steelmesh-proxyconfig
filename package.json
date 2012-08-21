@@ -11,9 +11,11 @@
     "node": "~0.8.5"
   },
   "dependencies": {
-    "nginx-proxy": "https://github.com/nathanoehlman/nginx-http-proxy/tarball/master"
+    "nginx-proxy": "https://github.com/nathanoehlman/nginx-http-proxy/tarball/master",
+    "debug": "*"
   },
   "devDependencies": {
-    "mocha": "*"
+    "mocha": "*",
+    "chai": "*"
   }
 }
